@@ -1,23 +1,22 @@
-import { DynamicModule, Global, Module, Provider } from '@nestjs/common'
+import { DynamicModule, Global, Module, Provider, Logger } from '@nestjs/common'
 import { CustomValue } from '@nestjs/core/injector/module'
 
 import { BullModuleAsyncOptions, BullModuleOptions, BullOptionsFactory } from './bull.interfaces'
 import { BullProvider } from './bull.provider'
-import { ConfigRead } from './bull.utils'
 
 @Global()
 @Module({})
 export class BullCoreModule {
   static forRoot(options: BullModuleOptions): DynamicModule {
-    options = ConfigRead(options)
-
+    Logger.log(JSON.stringify(options), 'forRoot')
+    options = options ? options : {}
     const BullOptions: CustomValue = {
       name: 'BULL_MODULE_OPTIONS',
       provide: 'BULL_MODULE_OPTIONS',
       useValue: {
-        name: options ? options.name : 'default',
-        options: options ? options.options : null,
-        processors: options ? options.processors : null,
+        name: options.name,
+        options: options.options,
+        processors: options.processors,
       } as BullModuleOptions,
     }
 
@@ -29,6 +28,7 @@ export class BullCoreModule {
   }
 
   static forRootAsync(options: BullModuleAsyncOptions): DynamicModule {
+    Logger.log(JSON.stringify(options), 'forRootAsync')
     const asyncProviders = this.createAsyncProviders(options)
 
     return {
@@ -39,6 +39,7 @@ export class BullCoreModule {
   }
 
   private static createAsyncProviders(options: BullModuleAsyncOptions): Provider[] {
+    Logger.log(JSON.stringify(options), 'createAsyncProviders')
     if (options.useExisting || options.useFactory) {
       return [this.createAsyncOptionsProvider(options)]
     }
@@ -52,6 +53,7 @@ export class BullCoreModule {
   }
 
   private static createAsyncOptionsProvider(options: BullModuleAsyncOptions): Provider {
+    Logger.log(JSON.stringify(options), 'createAsyncOptionsProvider')
     if (options.useFactory) {
       return {
         provide: 'BULL_MODULE_OPTIONS',
