@@ -5,7 +5,7 @@ import { BullModuleAsyncOptions, BullModuleOptions } from './bull.interfaces'
 
 @Module({})
 export class BullModule {
-  static forRoot(options: BullModuleOptions): DynamicModule {
+  static forRoot(options?: BullModuleOptions): DynamicModule {
     return {
       module: BullModule,
       modules: [BullCoreModule.forRoot(options)],

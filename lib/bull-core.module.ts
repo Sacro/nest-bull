@@ -2,7 +2,7 @@ import { DynamicModule, Global, Module, Provider } from '@nestjs/common'
 import { CustomValue } from '@nestjs/core/injector/module'
 
 import { BullModuleAsyncOptions, BullModuleOptions, BullOptionsFactory } from './bull.interfaces'
-import { BullProvider } from './bull.providers'
+import { BullProvider } from './bull.provider'
 import { ConfigRead } from './bull.utils'
 
 @Global()
@@ -15,9 +15,9 @@ export class BullCoreModule {
       name: 'BULL_MODULE_OPTIONS',
       provide: 'BULL_MODULE_OPTIONS',
       useValue: {
-        name: options.name,
-        options: options.options,
-        processors: options.processors,
+        name: options ? options.name : 'default',
+        options: options ? options.options : null,
+        processors: options ? options.processors : null,
       } as BullModuleOptions,
     }
 

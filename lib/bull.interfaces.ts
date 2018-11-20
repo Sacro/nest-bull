@@ -3,10 +3,9 @@ import * as Bull from 'bull'
 import { BullQueueProcessor } from './bull.types'
 
 export interface BullModuleOptions {
-  name: string
+  name?: string
   options?: Bull.QueueOptions
   processors?: BullQueueProcessor[]
-  provide: any
 }
 
 export interface BullOptionsFactory {
@@ -14,8 +13,8 @@ export interface BullOptionsFactory {
 }
 
 export interface BullModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
-  useExisting?: Type<BullModuleOptions>
-  useClass?: Type<BullModuleOptions>
+  useExisting?: Type<BullOptionsFactory>
+  useClass?: Type<BullOptionsFactory>
   useFactory?: (...args: any[]) => Promise<BullModuleOptions> | BullModuleOptions
   inject?: any[]
 }
