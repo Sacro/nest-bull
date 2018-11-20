@@ -1,38 +1,32 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
+  "defaultSeverity": "error",
+  "extends": ["tslint:recommended"],
+  "jsRules": {
+    "semicolon": true
+  },
+  "rules": {
+    "quotemark": [true, "single", "avoid-escape"],
+    "object-literal-sort-keys": false,
+    "ordered-imports": [
+      true,
+      {
+        "import-sources-order": "any",
+        "named-imports-order": "any"
+      }
     ],
-    "jsRules": {},
-    "rules": {
-        "quotemark": [true, "single", "avoid-escape"],
-        "object-literal-sort-keys": false,
-        "ordered-imports": [true, {
-            "import-sources-order": "any",
-            "named-imports-order": "any"
-        }],
-        "no-console": [false],
-        "interface-name": [true, "never-prefix"],
-        "eofline": false,
-        "linebreak-style": [
-            false
-        ],
-        "indent": false,
-        "member-access": false,
-        "ban-types": false,
-        "max-classes-per-file": [
-            false
-        ],
-        "member-ordering": [
-            false
-        ],
-        "no-var-requires": false,
-        "one-line": [
-            false
-        ],
-        "array-type": [
-            false
-        ]
-    },
-    "rulesDirectory": []
+    "no-console": [false],
+    "interface-name": [true, "never-prefix"],
+    "eofline": false,
+    "linebreak-style": [false],
+    "indent": false,
+    "member-access": false,
+    "ban-types": false,
+    "max-classes-per-file": [false],
+    "member-ordering": [false],
+    "no-var-requires": false,
+    "one-line": [false],
+    "array-type": [false],
+    "semicolon": true
+  },
+  "rulesDirectory": []
 }

@@ -1,17 +1,21 @@
-import { DynamicModule, Module } from '@nestjs/common';
-import { BullModuleOptions } from './bull.interfaces';
-import { createQueues } from './bull.providers';
+import { DynamicModule, Module } from '@nestjs/common'
+
+import { BullCoreModule } from './bull-core.module'
+import { BullModuleAsyncOptions, BullModuleOptions } from './bull.interfaces'
 
 @Module({})
 export class BullModule {
-
-  static forRoot(options: BullModuleOptions | BullModuleOptions[]): DynamicModule {
-    const providers: any[] = createQueues([].concat(options));
+  static forRoot(options: BullModuleOptions): DynamicModule {
     return {
       module: BullModule,
-      components: providers,
-      exports: providers,
-    };
+      modules: [BullCoreModule.forRoot(options)],
+    }
   }
 
+  static forRootAsync(options: BullModuleAsyncOptions): DynamicModule {
+    return {
+      module: BullModule,
+      modules: [BullCoreModule.forRootAsync(options)],
+    }
+  }
 }
