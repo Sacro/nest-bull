@@ -1,45 +1,44 @@
-import { DynamicModule, Global, Module, Provider, Logger } from '@nestjs/common'
+import { DynamicModule, Global, Module, Provider, Logger, Inject } from '@nestjs/common'
 import { CustomValue } from '@nestjs/core/injector/module'
 
 import { BullModuleAsyncOptions, BullModuleOptions, BullOptionsFactory } from './bull.interfaces'
-import { BullProvider } from './bull.provider'
+import { createQueues, getQueueToken } from './bull.utils'
+import { BULL_MODULE_OPTIONS } from './bull.constants'
+import { Queue } from 'bull'
 
 @Global()
 @Module({})
 export class BullCoreModule {
-  static forRoot(options: BullModuleOptions): DynamicModule {
-    Logger.log(JSON.stringify(options), 'forRoot')
-    options = options ? options : {}
-    const BullOptions: CustomValue = {
-      name: 'BULL_MODULE_OPTIONS',
-      provide: 'BULL_MODULE_OPTIONS',
-      useValue: {
-        name: options.name,
-        options: options.options,
-        processors: options.processors,
-      } as BullModuleOptions,
-    }
+  // constructor(
+  //   @Inject(BULL_MODULE_OPTIONS)
+  //   private readonly options: BullModuleOptions
+  // ) {}
 
+  static forRoot(options: BullModuleOptions = {}): DynamicModule {
     return {
       module: BullCoreModule,
-      components: [BullProvider, BullOptions],
-      exports: [BullProvider],
     }
   }
 
   static forRootAsync(options: BullModuleAsyncOptions): DynamicModule {
-    Logger.log(JSON.stringify(options), 'forRootAsync')
+    // const bullProvider = {
+    //   provide: getQueueToken(options.name),
+    //   useFactory: async (options: BullModuleOptions) => {
+    //     return createQueues([options])
+    //   },
+    //   inject: [BULL_MODULE_OPTIONS],
+    // }
     const asyncProviders = this.createAsyncProviders(options)
 
     return {
       module: BullCoreModule,
       imports: options.imports,
-      providers: [...asyncProviders, BullProvider],
+      providers: [...asyncProviders],
+      exports: [],
     }
   }
 
   private static createAsyncProviders(options: BullModuleAsyncOptions): Provider[] {
-    Logger.log(JSON.stringify(options), 'createAsyncProviders')
     if (options.useExisting || options.useFactory) {
       return [this.createAsyncOptionsProvider(options)]
     }
@@ -47,13 +46,13 @@ export class BullCoreModule {
       this.createAsyncOptionsProvider(options),
       {
         provide: options.useClass,
-        useClass: options.useClass,
+        useValue: options.useClass,
       },
     ]
   }
 
   private static createAsyncOptionsProvider(options: BullModuleAsyncOptions): Provider {
-    Logger.log(JSON.stringify(options), 'createAsyncOptionsProvider')
+    console.log(options)
     if (options.useFactory) {
       return {
         provide: 'BULL_MODULE_OPTIONS',

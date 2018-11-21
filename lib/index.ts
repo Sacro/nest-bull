@@ -1,4 +1,3 @@
-export { InjectQueue } from './bull.decorators'
-export { BullModuleOptions, BullOptionsFactory } from './bull.interfaces'
-export { BullModule } from './bull.module'
-export { BullProvider } from './bull.provider'
+export * from './bull.decorators'
+export * from './bull.interfaces'
+export * from './bull.module'
