@@ -1,42 +1,77 @@
-import { DynamicModule, Global, Module, Provider, Logger, Inject } from '@nestjs/common'
-import { CustomValue } from '@nestjs/core/injector/module'
+import { DynamicModule, Global, Inject, Logger, Module, Provider } from '@nestjs/common'
+import { ModuleRef } from '@nestjs/core'
+import * as Bull from 'bull'
+import * as Redis from 'ioredis'
 
+import { BULL_MODULE_ID, BULL_MODULE_OPTIONS } from './bull.constants'
 import { BullModuleAsyncOptions, BullModuleOptions, BullOptionsFactory } from './bull.interfaces'
-import { createQueues, getQueueToken } from './bull.utils'
-import { BULL_MODULE_OPTIONS } from './bull.constants'
-import { Queue } from 'bull'
+import { generateString, getConnectionToken } from './bull.utils'
 
 @Global()
 @Module({})
 export class BullCoreModule {
-  // constructor(
-  //   @Inject(BULL_MODULE_OPTIONS)
-  //   private readonly options: BullModuleOptions
-  // ) {}
+  constructor(
+    @Inject(BULL_MODULE_OPTIONS)
+    private readonly options: BullModuleOptions,
+    private readonly moduleRef: ModuleRef
+  ) {}
 
   static forRoot(options: BullModuleOptions = {}): DynamicModule {
+    const bullModuleOptions = {
+      provide: BULL_MODULE_OPTIONS,
+      useValue: options,
+    }
+
+    const connectionProvider = {
+      provide: getConnectionToken(options.options),
+      useFactory: async () => await this.createConnectionFactory(options),
+    }
+
     return {
       module: BullCoreModule,
+      providers: [connectionProvider, bullModuleOptions],
+      exports: [connectionProvider],
     }
   }
 
   static forRootAsync(options: BullModuleAsyncOptions): DynamicModule {
-    // const bullProvider = {
-    //   provide: getQueueToken(options.name),
-    //   useFactory: async (options: BullModuleOptions) => {
-    //     return createQueues([options])
-    //   },
-    //   inject: [BULL_MODULE_OPTIONS],
-    // }
+    const connectionProvider = {
+      provide: getConnectionToken(options as Bull.QueueOptions),
+      useFactory: async (bullModuleOptions: BullModuleOptions) => {
+        if (options.name) {
+          return await this.createConnectionFactory({
+            ...bullModuleOptions,
+            name: options.name,
+          })
+        }
+        return await this.createConnectionFactory(bullModuleOptions)
+      },
+      inject: [BULL_MODULE_OPTIONS],
+    }
+
     const asyncProviders = this.createAsyncProviders(options)
 
     return {
       module: BullCoreModule,
       imports: options.imports,
-      providers: [...asyncProviders],
-      exports: [],
+      providers: [
+        ...asyncProviders,
+        connectionProvider,
+        {
+          provide: BULL_MODULE_ID,
+          useValue: generateString(),
+        },
+      ],
+      exports: [connectionProvider],
     }
   }
+
+  /*async onModuleDestroy() {
+    const connection = this.moduleRef.get<any>(
+      getConnectionToken(this.options as Bull.QueueOptions)
+    )
+    connection && (await connection.close())
+  }*/
 
   private static createAsyncProviders(options: BullModuleAsyncOptions): Provider[] {
     if (options.useExisting || options.useFactory) {
@@ -52,7 +87,6 @@ export class BullCoreModule {
   }
 
   private static createAsyncOptionsProvider(options: BullModuleAsyncOptions): Provider {
-    console.log(options)
     if (options.useFactory) {
       return {
         provide: 'BULL_MODULE_OPTIONS',
@@ -60,10 +94,18 @@ export class BullCoreModule {
         inject: options.inject || [],
       }
     }
+
     return {
       provide: 'BULL_MODULE_OPTIONS',
-      useFactory: async (optionsFactory: BullOptionsFactory) => optionsFactory.createBullOptions(),
+      useFactory: async (optionsFactory: BullOptionsFactory) => {
+        Logger.log(optionsFactory)
+        optionsFactory.createBullOptions()
+      },
       inject: [options.useExisting || options.useClass],
     }
+  }
+
+  private static async createConnectionFactory(options: BullModuleOptions): Promise<any> {
+    return new Redis(options)
   }
 }

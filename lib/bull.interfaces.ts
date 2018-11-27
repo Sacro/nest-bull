@@ -6,6 +6,8 @@ export interface BullModuleOptions {
   name?: string
   options?: Bull.QueueOptions
   processors?: BullQueueProcessor[]
+  retryAttempts?: number
+  retryDelay?: number
 }
 
 export interface BullOptionsFactory {

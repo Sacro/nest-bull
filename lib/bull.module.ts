@@ -13,19 +13,19 @@ export class BullModule {
     }
   }
 
-  static forRootAsync(options: BullModuleAsyncOptions): DynamicModule {
-    return {
-      module: BullModule,
-      imports: [BullCoreModule.forRootAsync(options)],
-    }
-  }
-
   static forFeature(options: BullModuleOptions[]) {
     const providers = createQueues(options)
     return {
       module: BullModule,
       providers,
       exports: providers,
+    }
+  }
+
+  static forRootAsync(options: BullModuleAsyncOptions): DynamicModule {
+    return {
+      module: BullModule,
+      imports: [BullCoreModule.forRootAsync(options)],
     }
   }
 }
